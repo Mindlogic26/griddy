@@ -21,6 +21,9 @@ const statsCompletionRate = document.getElementById("stats-completion-rate");
 const statsLongestStreak = document.getElementById("stats-longest-streak");
 const archivedList = document.getElementById("archived-list");
 const archivedEmpty = document.getElementById("archived-empty");
+const exportBackupBtn = document.getElementById("export-backup-btn");
+const importBackupBtn = document.getElementById("import-backup-btn");
+const importFileInput = document.getElementById("import-file-input");
 const habitModal = document.getElementById("habit-modal");
 const habitForm = document.getElementById("habit-form");
 const habitTitleInput = document.getElementById("habit-title-input");
@@ -612,6 +615,118 @@ function closeStatsModal() {
   statsBtn.focus();
 }
 
+function formatBackupFilename(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `griddy-backup-${year}-${month}-${day}.json`;
+}
+
+function buildBackupPayload() {
+  return {
+    app: "GRIDDY",
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    habits,
+    archivedHabits,
+    settings: {
+      debugDayOffset,
+    },
+  };
+}
+
+function downloadJsonFile(filename, data) {
+  const blob = new Blob([JSON.stringify(data, null, 2)], {
+    type: "application/json",
+  });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
+function exportBackup() {
+  const payload = buildBackupPayload();
+  downloadJsonFile(formatBackupFilename(), payload);
+}
+
+function isValidBackupPayload(data) {
+  if (!data || typeof data !== "object" || Array.isArray(data)) return false;
+  if (!Array.isArray(data.habits)) return false;
+  if (
+    data.archivedHabits !== undefined &&
+    !Array.isArray(data.archivedHabits)
+  ) {
+    return false;
+  }
+
+  const appName = typeof data.app === "string" ? data.app.toUpperCase() : "";
+  if (appName && appName !== "GRIDDY") return false;
+
+  return data.habits.every(
+    (item) => item && typeof item === "object" && typeof item.title === "string"
+  );
+}
+
+function applyBackupPayload(payload) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(payload.habits));
+  localStorage.setItem(
+    ARCHIVE_STORAGE_KEY,
+    JSON.stringify(Array.isArray(payload.archivedHabits) ? payload.archivedHabits : [])
+  );
+
+  const savedOffset = payload.settings?.debugDayOffset;
+  debugDayOffset = Number.isFinite(savedOffset)
+    ? Math.max(0, Number(savedOffset))
+    : 0;
+
+  const restoredHabits = loadHabits();
+  habits = Array.isArray(restoredHabits) ? restoredHabits : [];
+  archivedHabits = loadArchivedHabits();
+  saveHabits();
+  saveArchivedHabits();
+  renderHabits();
+  closeStatsModal();
+}
+
+function handleImportFileChange(event) {
+  const file = event.target.files && event.target.files[0];
+  event.target.value = "";
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const parsed = JSON.parse(String(reader.result || ""));
+      if (!isValidBackupPayload(parsed)) {
+        window.alert("Invalid GRIDDY backup file. Please choose a valid JSON backup.");
+        return;
+      }
+
+      const confirmed = window.confirm(
+        "This will replace your current habits with the imported backup. Continue?"
+      );
+      if (!confirmed) return;
+
+      applyBackupPayload(parsed);
+    } catch {
+      window.alert("Could not read that backup file. Please try another JSON file.");
+    }
+  };
+  reader.onerror = () => {
+    window.alert("Could not read that backup file. Please try again.");
+  };
+  reader.readAsText(file);
+}
+
+function openImportBackupPicker() {
+  importFileInput.click();
+}
+
 function archiveHabit(habitId) {
   const index = habits.findIndex((habit) => habit.id === habitId);
   if (index === -1) return;
@@ -1145,6 +1260,9 @@ function initModalEvents() {
 
   statsBtn.addEventListener("click", openStatsModal);
   statsCloseBtn.addEventListener("click", closeStatsModal);
+  exportBackupBtn.addEventListener("click", exportBackup);
+  importBackupBtn.addEventListener("click", openImportBackupPicker);
+  importFileInput.addEventListener("change", handleImportFileChange);
 
   deleteCancelBtn.addEventListener("click", closeDeleteConfirmModal);
   deleteConfirmBtn.addEventListener("click", confirmPendingDelete);

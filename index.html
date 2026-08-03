@@ -265,6 +265,39 @@
               trophy.
             </p>
           </section>
+
+          <section class="stats-section" aria-labelledby="stats-data-title">
+            <h3 id="stats-data-title" class="stats-section__title">
+              Data Management
+            </h3>
+            <p class="data-management__hint">
+              Export a JSON backup of your habits and history, or restore from a
+              previous backup file.
+            </p>
+            <div class="data-management__actions">
+              <button
+                type="button"
+                id="export-backup-btn"
+                class="data-mgmt-btn"
+              >
+                Export Backup 💾
+              </button>
+              <button
+                type="button"
+                id="import-backup-btn"
+                class="data-mgmt-btn data-mgmt-btn--secondary"
+              >
+                Import Backup 📂
+              </button>
+            </div>
+            <input
+              type="file"
+              id="import-file-input"
+              class="import-file-input"
+              accept=".json,application/json"
+              hidden
+            />
+          </section>
         </div>
       </div>
     </div>
