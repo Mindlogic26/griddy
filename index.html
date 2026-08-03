@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#050a12" />
+    <meta name="description" content="GRIDDY — track flexible habit challenges with neon progress grids." />
+    <title>GRIDDY</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="device-shell">
+      <header class="app-header">
+        <button
+          type="button"
+          id="stats-btn"
+          class="stats-btn"
+          aria-label="Open statistics and contract history"
+        >
+          🏆
+        </button>
+        <p class="brand">GRIDDY</p>
+        <button
+          type="button"
+          id="add-habit-btn"
+          class="add-btn"
+          aria-label="Add habit card"
+        >
+          +
+        </button>
+      </header>
+
+      <main class="app-main">
+        <!-- Habit cards are rendered by app.js with flexible challenge lengths -->
+        <div id="dashboard" class="dashboard" aria-live="polite"></div>
+        <p id="empty-state" class="empty-state" hidden>
+          No habits yet. Tap + to create your first contract.
+        </p>
+      </main>
+
+      <button
+        type="button"
+        id="debug-next-day-btn"
+        style="opacity: 0.3; margin-top: 40px;"
+      >
+        [Debug: +1 Day]
+      </button>
+
+      <div
+        id="habit-modal"
+        class="habit-modal"
+        hidden
+        aria-hidden="true"
+      >
+        <div class="habit-modal__backdrop" data-modal-dismiss></div>
+        <div
+          class="habit-modal__dialog"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="habit-modal-title"
+        >
+          <h2 id="habit-modal-title" class="habit-modal__title">New habit</h2>
+
+          <form id="habit-form" class="habit-modal__form">
+            <label class="habit-modal__label" for="habit-title-input">
+              Habit name
+            </label>
+            <input
+              type="text"
+              id="habit-title-input"
+              name="title"
+              class="habit-modal__input"
+              placeholder="Habit name (e.g. Push ups)"
+              autocomplete="off"
+              maxlength="60"
+              required
+            />
+
+            <fieldset class="habit-mode-fieldset">
+              <legend class="habit-modal__label">Habit type</legend>
+              <div class="habit-mode-toggle" role="radiogroup" aria-label="Habit type">
+                <label class="habit-mode-option">
+                  <input
+                    type="radio"
+                    name="habit-mode"
+                    id="habit-mode-fixed"
+                    value="fixed"
+                    checked
+                  />
+                  <span class="habit-mode-option__card">
+                    <span class="habit-mode-option__title">Fixed contract</span>
+                    <span class="habit-mode-option__meta">Set weeks</span>
+                  </span>
+                </label>
+                <label class="habit-mode-option">
+                  <input
+                    type="radio"
+                    name="habit-mode"
+                    id="habit-mode-continuous"
+                    value="continuous"
+                  />
+                  <span class="habit-mode-option__card">
+                    <span class="habit-mode-option__title">Continuous</span>
+                    <span class="habit-mode-option__meta">Rolling 28 days</span>
+                  </span>
+                </label>
+              </div>
+            </fieldset>
+
+            <div id="fixed-duration-fields" class="fixed-duration-fields">
+              <label class="habit-modal__label" for="habit-weeks-slider">
+                Challenge length
+              </label>
+              <div class="duration-slider">
+                <span id="slider-value-label" class="duration-slider__label">
+                  4 Weeks (28 days)
+                </span>
+                <input
+                  type="range"
+                  id="habit-weeks-slider"
+                  class="duration-slider__input"
+                  min="1"
+                  max="10"
+                  step="1"
+                  value="4"
+                  aria-valuemin="1"
+                  aria-valuemax="10"
+                  aria-valuenow="4"
+                  aria-describedby="slider-value-label"
+                />
+                <div class="duration-slider__scale" aria-hidden="true">
+                  <span>1</span>
+                  <span>10</span>
+                </div>
+              </div>
+            </div>
+
+            <p id="continuous-mode-hint" class="continuous-mode-hint" hidden>
+              Grows day by day, then rolls at 28 days. The last block is always
+              today, with streak, best, and completed / elapsed day stats.
+            </p>
+
+            <div class="habit-modal__actions">
+              <button
+                type="button"
+                id="habit-cancel-btn"
+                class="habit-modal__btn habit-modal__btn--ghost"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                id="habit-create-btn"
+                class="habit-modal__btn habit-modal__btn--primary"
+              >
+                Create
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div
+        id="delete-confirm-modal"
+        class="habit-modal"
+        hidden
+        aria-hidden="true"
+      >
+        <div class="habit-modal__backdrop" data-delete-modal-dismiss></div>
+        <div
+          class="habit-modal__dialog"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="delete-confirm-title"
+          aria-describedby="delete-confirm-message"
+        >
+          <h2 id="delete-confirm-title" class="habit-modal__title">
+            Delete Habit?
+          </h2>
+          <p id="delete-confirm-message" class="delete-confirm__message">
+            Are you sure you want to delete this habit? This action cannot be
+            undone.
+          </p>
+          <div class="habit-modal__actions">
+            <button
+              type="button"
+              id="delete-cancel-btn"
+              class="habit-modal__btn habit-modal__btn--ghost"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              id="delete-confirm-btn"
+              class="habit-modal__btn habit-modal__btn--danger"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+      <div
+        id="stats-modal"
+        class="habit-modal stats-modal"
+        hidden
+        aria-hidden="true"
+      >
+        <div class="habit-modal__backdrop" data-stats-modal-dismiss></div>
+        <div
+          class="habit-modal__dialog stats-modal__dialog"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="stats-modal-title"
+        >
+          <div class="stats-modal__header">
+            <h2 id="stats-modal-title" class="habit-modal__title">
+              Statistics & History
+            </h2>
+            <button
+              type="button"
+              id="stats-close-btn"
+              class="stats-close-btn"
+              aria-label="Close statistics"
+            >
+              Close
+            </button>
+          </div>
+
+          <section class="stats-section" aria-labelledby="stats-overview-title">
+            <h3 id="stats-overview-title" class="stats-section__title">
+              Overview
+            </h3>
+            <div class="stats-overview">
+              <article class="stats-metric">
+                <p class="stats-metric__value" id="stats-contracts-completed">0</p>
+                <p class="stats-metric__label">Contracts completed</p>
+              </article>
+              <article class="stats-metric">
+                <p class="stats-metric__value" id="stats-completion-rate">0%</p>
+                <p class="stats-metric__label">Global completion</p>
+              </article>
+              <article class="stats-metric">
+                <p class="stats-metric__value" id="stats-longest-streak">🔥 0</p>
+                <p class="stats-metric__label">Longest streak</p>
+              </article>
+            </div>
+          </section>
+
+          <section class="stats-section" aria-labelledby="stats-archive-title">
+            <h3 id="stats-archive-title" class="stats-section__title">
+              Archived Contracts
+            </h3>
+            <div id="archived-list" class="archived-list"></div>
+            <p id="archived-empty" class="archived-empty">
+              No archived contracts yet. Fulfill a fixed challenge to earn a
+              trophy.
+            </p>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
