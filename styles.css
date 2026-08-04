@@ -483,19 +483,36 @@ body {
     0 0 18px rgba(0, 163, 255, 0.55);
 }
 
+/* Future / inactive empty day cells — higher contrast for mobile screens */
 .habit-cell.is-future,
-.habit-cell:disabled {
-  opacity: var(--grid-disabled);
+.habit-cell.is-future:disabled {
+  opacity: 0.85;
   cursor: not-allowed;
   pointer-events: none;
-  box-shadow: none;
   animation: none;
+  border: 2px solid rgba(0, 115, 255, 0.4);
+  background: rgba(0, 112, 243, 0.1);
+  box-shadow:
+    inset 0 0 6px rgba(0, 115, 255, 0.12),
+    0 0 4px rgba(0, 115, 255, 0.1);
 }
 
 .habit-cell.is-future:hover,
-.habit-cell:disabled:hover {
-  border-color: var(--cell-border);
-  background: var(--cell);
+.habit-cell.is-future:disabled:hover {
+  border-color: rgba(0, 115, 255, 0.4);
+  background: rgba(0, 112, 243, 0.1);
+  box-shadow:
+    inset 0 0 6px rgba(0, 115, 255, 0.12),
+    0 0 4px rgba(0, 115, 255, 0.1);
+}
+
+/* Keep filled and today styles dominant over future rules */
+.habit-cell.is-filled {
+  opacity: 1;
+}
+
+.habit-cell.today {
+  opacity: 1;
 }
 
 @keyframes today-pulse {
