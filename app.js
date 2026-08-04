@@ -1123,7 +1123,7 @@ function renderCard(habit) {
   deleteBtn.type = "button";
   deleteBtn.className = "delete-btn";
   deleteBtn.setAttribute("aria-label", `Delete ${habit.title}`);
-  deleteBtn.textContent = "×";
+  deleteBtn.textContent = "🗑️";
   deleteBtn.addEventListener("click", (event) => {
     event.stopPropagation();
     openDeleteConfirmModal(habit);

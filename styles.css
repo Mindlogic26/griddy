@@ -483,6 +483,50 @@ body {
 
 .delete-btn {
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 1.35rem;
+  font-weight: 400;
+  line-height: 1;
+  cursor: pointer;
+  appearance: none;
+  opacity: 0.7;
+  transition:
+    color 0.2s ease,
+    opacity 0.2s ease,
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.delete-btn:hover,
+.delete-btn:focus-visible {
+  opacity: 1;
+  color: #ff5c7a;
+  border-color: rgba(255, 92, 122, 0.4);
+  background: rgba(255, 59, 92, 0.12);
+}
+
+.delete-btn:active {
+  color: #ff3b5c;
+  background: rgba(255, 59, 92, 0.2);
+  border-color: rgba(255, 59, 92, 0.55);
+  transform: scale(0.94);
+}
+
+.delete-btn:focus-visible {
+  outline: 2px solid rgba(255, 92, 122, 0.55);
+  outline-offset: 2px;
 }
 
 .habit-grid-panel {
@@ -511,37 +555,6 @@ body {
   transform: translateY(-6px);
   pointer-events: none;
   overflow: hidden;
-}
-
-.delete-btn {
-  margin: 0;
-  padding: 0;
-  border: none;
-  background: transparent;
-  color: var(--muted);
-  font-family: inherit;
-  font-size: 1.15rem;
-  font-weight: 400;
-  line-height: 1;
-  cursor: pointer;
-  appearance: none;
-  transition: color 0.2s ease, transform 0.2s ease;
-}
-
-.delete-btn:hover,
-.delete-btn:focus-visible {
-  color: #ff5c7a;
-}
-
-.delete-btn:active {
-  color: #ff3b5c;
-  transform: scale(0.92);
-}
-
-.delete-btn:focus-visible {
-  outline: 2px solid rgba(255, 92, 122, 0.55);
-  outline-offset: 3px;
-  border-radius: 4px;
 }
 
 .habit-grid {
