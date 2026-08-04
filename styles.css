@@ -61,6 +61,11 @@ body {
   display: flex;
   flex-direction: column;
   padding: 28px 20px 32px;
+  /* Keep header clear of notch / Dynamic Island / status bar on iOS PWAs */
+  padding-top: max(28px, calc(env(safe-area-inset-top, 0px) + 12px));
+  padding-right: max(20px, env(safe-area-inset-right, 0px));
+  padding-bottom: max(32px, env(safe-area-inset-bottom, 0px));
+  padding-left: max(20px, env(safe-area-inset-left, 0px));
   background: var(--shell);
   border: 1px solid var(--line);
   border-radius: 28px;
