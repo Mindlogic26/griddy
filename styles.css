@@ -78,11 +78,9 @@ body {
   box-shadow:
     0 0 0 1px rgba(0, 163, 255, 0.04),
     0 24px 60px rgba(0, 40, 100, 0.35);
-  overflow-x: hidden;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  touch-action: pan-y;
-  -webkit-overflow-scrolling: touch;
+  overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: none;
 }
 
 .app-header {

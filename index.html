@@ -49,7 +49,7 @@
         </button>
       </header>
 
-      <main class="app-main">
+      <main class="app-main scrollable-content">
         <!-- Habit cards are rendered by app.js (title edit, grids, streaks) -->
         <div id="dashboard" class="dashboard" aria-live="polite"></div>
         <p id="empty-state" class="empty-state" hidden>
@@ -226,7 +226,7 @@
       >
         <div class="habit-modal__backdrop" data-stats-modal-dismiss></div>
         <div
-          class="habit-modal__dialog stats-modal__dialog"
+          class="habit-modal__dialog stats-modal__dialog scrollable-content"
           role="dialog"
           aria-modal="true"
           aria-labelledby="stats-modal-title"
@@ -269,7 +269,7 @@
             <h3 id="stats-archive-title" class="stats-section__title">
               Archived Contracts
             </h3>
-            <div id="archived-list" class="archived-list"></div>
+            <div id="archived-list" class="archived-list scrollable-content"></div>
             <p id="archived-empty" class="archived-empty">
               No archived contracts yet. Fulfill a fixed challenge to earn a
               trophy.
