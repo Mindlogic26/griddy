@@ -138,11 +138,23 @@ const MONTH_SHORT_NAMES = [
 ];
 
 function formatHeaderDate(date) {
-  return `${WEEKDAY_NAMES[date.getDay()]}, ${MONTH_SHORT_NAMES[date.getMonth()]} ${date.getDate()}`;
+  return `${WEEKDAY_NAMES[date.getDay()]}, ${MONTH_SHORT_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
 }
 
 function formatCompactDate(date) {
   return `${MONTH_SHORT_NAMES[date.getMonth()]} ${date.getDate()}`;
+}
+
+function formatStartDate(date) {
+  const monthDay = formatCompactDate(date);
+  const currentYear = getAppToday().getFullYear();
+
+  if (date.getFullYear() === currentYear) {
+    return monthDay;
+  }
+
+  const shortYear = String(date.getFullYear()).slice(-2);
+  return `${monthDay}, '${shortYear}`;
 }
 
 function formatTooltipDate(date) {
@@ -1136,7 +1148,7 @@ function renderStartDateLabel(habit) {
 
   const label = document.createElement("span");
   label.className = "habit-start-date";
-  label.textContent = `Start: ${formatCompactDate(new Date(createdDate))}`;
+  label.textContent = `Start: ${formatStartDate(new Date(createdDate))}`;
   return label;
 }
 
