@@ -117,7 +117,7 @@ function isContinuousHabit(habit) {
 
 function getCurrentDayIndex(habit) {
   if (isContinuousHabit(habit)) {
-    // Today is always the last block in the continuous week grid.
+    // Today is always the last block in the growing or rolling window.
     return Math.max(0, habit.days.length - 1);
   }
 
@@ -319,12 +319,7 @@ function renderStreakBadgeContent(badge, habit) {
   badge.classList.toggle("is-zero", currentStreak === 0);
 }
 
-function estimatePanelMaxHeight(dayCount, options = {}) {
-  if (options.continuous) {
-    // Width-based 4-row cap (cqw). JS may refine via --continuous-grid-max-height.
-    return "calc(4 * ((100cqw - 48px) / 7) + 24px)";
-  }
-
+function estimatePanelMaxHeight(dayCount) {
   const rows = Math.max(1, Math.ceil(dayCount / GRID_COLUMNS));
   const rowPitch = 48;
   const estimated = rows * rowPitch + 12;
@@ -366,81 +361,48 @@ function syncContinuousHabitWindow(habit) {
     ? habit.days.map((day) => Boolean(day))
     : [];
 
-  if (days.length === 0) {
-    days = [false];
-  }
-
   const windowEnd = normalizeCreatedDate(habit.windowEndDate)
     ? startOfLocalDay(new Date(habit.windowEndDate))
-    : null;
+    : today;
+  const shift = Math.floor((today.getTime() - windowEnd.getTime()) / MS_PER_DAY);
 
-  if (windowEnd) {
-    const shift = Math.floor((today.getTime() - windowEnd.getTime()) / MS_PER_DAY);
-    // Append a new empty day for each calendar day that passed — never drop history.
-    if (shift > 0) {
-      days = days.concat(createEmptyDays(shift));
+  if (elapsedDays < CONTINUOUS_WINDOW_DAYS) {
+    // Growing phase: show only days that have existed since creation.
+    const targetLength = elapsedDays;
+
+    if (days.length > targetLength) {
+      days = days.slice(-targetLength);
+    }
+
+    while (days.length < targetLength) {
+      days.push(false);
     }
   } else {
-    // First sync without a window end: grow from creation through today.
-    while (days.length < elapsedDays) {
+    // Rolling phase: fixed 28-day window ending on today.
+    if (days.length > CONTINUOUS_WINDOW_DAYS) {
+      days = days.slice(-CONTINUOUS_WINDOW_DAYS);
+    }
+
+    while (days.length < CONTINUOUS_WINDOW_DAYS) {
       days.push(false);
     }
-  }
 
-  // Young habits (under the former 28-day cap) catch up if syncs were missed.
-  // Do not invent empty history for older habits that previously used a rolling window.
-  if (
-    days.length < elapsedDays &&
-    days.length < CONTINUOUS_WINDOW_DAYS &&
-    elapsedDays <= CONTINUOUS_WINDOW_DAYS
-  ) {
-    while (days.length < elapsedDays) {
-      days.push(false);
+    if (shift > 0) {
+      if (shift >= CONTINUOUS_WINDOW_DAYS) {
+        days = createEmptyDays(CONTINUOUS_WINDOW_DAYS);
+      } else {
+        days = days.slice(shift).concat(createEmptyDays(shift));
+      }
+    }
+
+    if (days.length > CONTINUOUS_WINDOW_DAYS) {
+      days = days.slice(-CONTINUOUS_WINDOW_DAYS);
     }
   }
 
   habit.days = days;
   habit.windowEndDate = today.toISOString();
   calculateStreaks(habit);
-}
-
-function syncContinuousGridViewport(panel) {
-  if (!panel) return;
-
-  const grid = panel.querySelector(".habit-grid");
-  if (!grid) return;
-
-  const apply = () => {
-    if (!grid.isConnected) return;
-
-    const cell = grid.querySelector(".habit-cell");
-    const gap =
-      Number.parseFloat(window.getComputedStyle(grid).rowGap) || 8;
-
-    // Measure live square size so exactly 4 rows fit on any screen width.
-    if (cell) {
-      const squareSize = cell.getBoundingClientRect().width;
-      if (squareSize > 0) {
-        const maxHeight = squareSize * 4 + gap * 3;
-        const maxHeightPx = `${maxHeight}px`;
-        panel.style.setProperty("--continuous-grid-max-height", maxHeightPx);
-        grid.style.setProperty("--continuous-grid-max-height", maxHeightPx);
-      }
-    }
-
-    // Keep the active week (today) visible at the bottom of the 4-row viewport.
-    grid.scrollTop = grid.scrollHeight;
-  };
-
-  apply();
-  window.requestAnimationFrame(() => {
-    apply();
-    window.requestAnimationFrame(apply);
-  });
-}
-
-function scrollContinuousPanelToLatest(panel) {
-  syncContinuousGridViewport(panel);
 }
 
 function saveHabits() {
@@ -940,7 +902,7 @@ function buildGrid(habit) {
   grid.setAttribute(
     "aria-label",
     continuous
-      ? `${habit.title} continuous progress grid`
+      ? `${habit.title} rolling 28 day progress grid`
       : `${habit.title} ${targetDays} day progress grid`
   );
 
@@ -1196,15 +1158,9 @@ function renderCard(habit) {
   panel.id = `grid-panel-${habit.id}`;
   panel.style.setProperty(
     "--grid-panel-max-height",
-    estimatePanelMaxHeight(targetDays, {
-      continuous: isContinuousHabit(habit),
-    })
+    estimatePanelMaxHeight(targetDays)
   );
   panel.appendChild(buildGrid(habit));
-
-  if (isContinuousHabit(habit)) {
-    scrollContinuousPanelToLatest(panel);
-  }
 
   card.append(header, panel);
 

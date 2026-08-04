@@ -204,13 +204,6 @@ body {
   border-bottom: 1px solid rgba(0, 112, 243, 0.1);
 }
 
-.grid-card[data-habit-mode="continuous"] {
-  /* Card height follows header + capped grid — never grows with full history */
-  height: auto;
-  max-height: none;
-  overflow: visible;
-}
-
 .grid-card:last-child {
   border-bottom: none;
   padding-bottom: 0;
@@ -512,33 +505,12 @@ body {
   overscroll-behavior: contain;
 }
 
-/* Continuous cards: panel provides width container queries; grid scrolls at exactly 4 rows */
-.grid-card[data-habit-mode="continuous"] .habit-grid-panel {
-  container-type: inline-size;
-  container-name: continuous-habit-panel;
-  --continuous-grid-gap: 8px;
-  /*
-   * Exactly 4 square rows + 3 gaps.
-   * Use 100cqw (panel width). Do NOT use 100% here — in max-height,
-   * percentage resolves against height, not width.
-   */
-  --continuous-grid-max-height: calc(
-    4 * ((100cqw - 6 * var(--continuous-grid-gap)) / 7) +
-      3 * var(--continuous-grid-gap)
-  );
-}
-
-.grid-card[data-habit-mode="continuous"]:not(.is-collapsed) .habit-grid-panel {
-  max-height: var(--continuous-grid-max-height) !important;
-  overflow: hidden !important;
-}
-
 .grid-card.is-collapsed .habit-grid-panel {
-  max-height: 0 !important;
+  max-height: 0;
   opacity: 0;
   transform: translateY(-6px);
   pointer-events: none;
-  overflow: hidden !important;
+  overflow: hidden;
 }
 
 .delete-btn {
@@ -574,59 +546,14 @@ body {
 
 .habit-grid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   grid-auto-rows: auto;
   align-content: start;
   justify-items: stretch;
-  gap: 8px;
+  gap: var(--gap);
   width: 100%;
   height: auto;
-  max-width: 100%;
   padding-bottom: 2px;
-}
-
-/*
- * Continuous habit squares live in .habit-grid.
- * Height tracks live square size: 4 * S + 3 * gap (S from 7-column width).
- */
-.grid-card[data-habit-mode="continuous"] .habit-grid {
-  display: grid !important;
-  grid-template-columns: repeat(7, 1fr) !important;
-  grid-auto-rows: auto !important;
-  align-content: start !important;
-  gap: var(--continuous-grid-gap, 8px) !important;
-  width: 100% !important;
-  max-width: 100% !important;
-  height: auto !important;
-  max-height: var(--continuous-grid-max-height) !important;
-  overflow-x: hidden !important;
-  overflow-y: auto !important;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
-  scroll-snap-type: y mandatory;
-  scroll-padding-block: 0;
-  scrollbar-gutter: stable;
-  padding-bottom: 0 !important;
-  box-sizing: border-box !important;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(0, 163, 255, 0.45) transparent;
-}
-
-.grid-card[data-habit-mode="continuous"] .habit-grid::-webkit-scrollbar {
-  width: 4px;
-}
-
-.grid-card[data-habit-mode="continuous"] .habit-grid::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.grid-card[data-habit-mode="continuous"] .habit-grid::-webkit-scrollbar-thumb {
-  background: linear-gradient(
-    180deg,
-    rgba(0, 112, 243, 0.35),
-    rgba(0, 163, 255, 0.55)
-  );
-  border-radius: 999px;
 }
 
 .habit-grid .habit-cell,
@@ -634,20 +561,10 @@ body {
   max-width: 100%;
 }
 
-.grid-card[data-habit-mode="continuous"] .habit-cell,
-.grid-card[data-habit-mode="continuous"] .grid-day {
-  aspect-ratio: 1 !important;
-  width: 100% !important;
-  height: auto !important;
-  scroll-snap-align: start;
-  scroll-snap-stop: normal;
-}
-
 .habit-cell {
-  aspect-ratio: 1;
+  aspect-ratio: 1 / 1;
   width: 100%;
   height: auto;
-  max-height: none;
   min-width: 0;
   min-height: 0;
   margin: 0;
