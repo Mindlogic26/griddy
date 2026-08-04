@@ -4,15 +4,6 @@ const MAX_WEEKS = 10;
 const DAYS_PER_WEEK = 7;
 const CONTINUOUS_WINDOW_DAYS = 28;
 const DEFAULT_TARGET_DAYS = DEFAULT_WEEKS * DAYS_PER_WEEK;
-const DEFAULT_HABIT_THEME = "blue";
-const HABIT_THEMES = ["blue", "mint", "purple", "amber", "rose"];
-const HABIT_THEME_LABELS = {
-  blue: "Electric Blue",
-  mint: "Neon Mint",
-  purple: "Cyber Purple",
-  amber: "Sunset Amber",
-  rose: "Hot Rose",
-};
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const STORAGE_KEY = "griddy.habits";
 const ARCHIVE_STORAGE_KEY = "griddy.archived";
@@ -60,7 +51,6 @@ const deleteConfirmBtn = document.getElementById("delete-confirm-btn");
  *   isCollapsed: boolean,
  *   createdDate: string | null,
  *   windowEndDate: string | null,
- *   theme?: string,
  *   currentStreak?: number,
  *   bestStreak?: number,
  *   totalCompletedDays?: number,
@@ -206,70 +196,6 @@ function formatCellTitle(habit, dayIndex, currentDayIndex, totalDays) {
   else if (!isDayInteractive(habit, dayIndex, currentDayIndex)) status = "Upcoming";
 
   return `${dateLabel} - ${status}`;
-}
-
-function normalizeHabitTheme(value) {
-  return HABIT_THEMES.includes(value) ? value : DEFAULT_HABIT_THEME;
-}
-
-function getSelectedHabitTheme() {
-  const selected = habitForm.querySelector('input[name="habit-color"]:checked');
-  return normalizeHabitTheme(selected ? selected.value : DEFAULT_HABIT_THEME);
-}
-
-function setSelectedHabitTheme(theme) {
-  const nextTheme = normalizeHabitTheme(theme);
-  const input = habitForm.querySelector(
-    `input[name="habit-color"][value="${nextTheme}"]`
-  );
-  if (input) input.checked = true;
-}
-
-function createColorPicker(selectedTheme, onChange) {
-  const picker = document.createElement("div");
-  picker.className = "habit-color-picker";
-  picker.setAttribute("role", "radiogroup");
-  picker.setAttribute("aria-label", "Accent color");
-
-  const groupName = `habit-color-${crypto.randomUUID()}`;
-
-  HABIT_THEMES.forEach((theme) => {
-    const label = document.createElement("label");
-    label.className = "habit-color-option";
-    label.title = HABIT_THEME_LABELS[theme];
-
-    const input = document.createElement("input");
-    input.type = "radio";
-    input.name = groupName;
-    input.value = theme;
-    input.checked = theme === selectedTheme;
-
-    const dot = document.createElement("span");
-    dot.className = "habit-color-option__dot";
-    dot.dataset.color = theme;
-    dot.setAttribute("aria-hidden", "true");
-
-    const sr = document.createElement("span");
-    sr.className = "visually-hidden";
-    sr.textContent = HABIT_THEME_LABELS[theme];
-
-    input.addEventListener("click", (event) => {
-      event.stopPropagation();
-    });
-    input.addEventListener("change", (event) => {
-      event.stopPropagation();
-      onChange(theme);
-    });
-
-    label.append(input, dot, sr);
-    picker.appendChild(label);
-  });
-
-  picker.addEventListener("click", (event) => {
-    event.stopPropagation();
-  });
-
-  return picker;
 }
 
 function isContinuousHabit(habit) {
@@ -952,7 +878,6 @@ function loadHabits() {
           isCollapsed: Boolean(item.isCollapsed),
           createdDate: normalizeCreatedDate(item.createdDate),
           windowEndDate: normalizeCreatedDate(item.windowEndDate),
-          theme: normalizeHabitTheme(item.theme),
           currentStreak: 0,
           bestStreak: 0,
         };
@@ -1129,7 +1054,7 @@ function buildGrid(habit) {
   return grid;
 }
 
-function saveHabitTitle(habitId, newTitle, theme) {
+function saveHabitTitle(habitId, newTitle) {
   const habit = habits.find((entry) => entry.id === habitId);
   if (!habit) return false;
 
@@ -1137,9 +1062,6 @@ function saveHabitTitle(habitId, newTitle, theme) {
   if (!trimmed) return false;
 
   habit.title = trimmed;
-  if (theme !== undefined) {
-    habit.theme = normalizeHabitTheme(theme);
-  }
   saveHabits();
   renderHabits();
   return true;
@@ -1167,11 +1089,6 @@ function enterTitleEditMode(habit, heading, titleEl, editBtn) {
   cancelBtn.className = "title-cancel-btn";
   cancelBtn.textContent = "Cancel";
 
-  let selectedTheme = normalizeHabitTheme(habit.theme);
-  const colorPicker = createColorPicker(selectedTheme, (theme) => {
-    selectedTheme = theme;
-  });
-
   const exitEditMode = () => {
     form.replaceWith(titleEl, editBtn);
   };
@@ -1183,7 +1100,7 @@ function enterTitleEditMode(habit, heading, titleEl, editBtn) {
       input.classList.add("is-invalid");
       return;
     }
-    saveHabitTitle(habit.id, nextTitle, selectedTheme);
+    saveHabitTitle(habit.id, nextTitle);
   };
 
   saveBtn.addEventListener("click", (event) => {
@@ -1216,7 +1133,7 @@ function enterTitleEditMode(habit, heading, titleEl, editBtn) {
     }
   });
 
-  form.append(input, saveBtn, cancelBtn, colorPicker);
+  form.append(input, saveBtn, cancelBtn);
   titleEl.replaceWith(form);
   editBtn.remove();
   window.requestAnimationFrame(() => {
@@ -1272,7 +1189,6 @@ function renderCard(habit) {
   card.className = "grid-card";
   card.dataset.habitId = habit.id;
   card.dataset.habitMode = habit.mode;
-  card.dataset.habitTheme = normalizeHabitTheme(habit.theme);
   card.setAttribute("aria-label", habit.title);
 
   const header = document.createElement("header");
@@ -1441,7 +1357,6 @@ function addHabit(title, options = {}) {
     isCollapsed: false,
     createdDate: todayIso,
     windowEndDate: mode === "continuous" ? todayIso : null,
-    theme: normalizeHabitTheme(options.theme),
     currentStreak: 0,
     bestStreak: 0,
   };
@@ -1507,7 +1422,6 @@ function resetHabitForm() {
   habitForm.reset();
   habitModeFixed.checked = true;
   habitModeContinuous.checked = false;
-  setSelectedHabitTheme(DEFAULT_HABIT_THEME);
   syncDurationSlider(DEFAULT_WEEKS);
   syncHabitModeFields();
 }
@@ -1540,7 +1454,6 @@ function submitHabitForm(event) {
   const mode = getSelectedHabitMode();
   addHabit(trimmedTitle, {
     mode,
-    theme: getSelectedHabitTheme(),
     targetDays: mode === "continuous" ? CONTINUOUS_WINDOW_DAYS : weeksToDays(habitWeeksSlider.value),
   });
   closeHabitModal();
