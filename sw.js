@@ -1,4 +1,4 @@
-const CACHE_NAME = "griddy-v2";
+const CACHE_NAME = "griddy-v3";
 const ASSETS = [
   "./",
   "./index.html",

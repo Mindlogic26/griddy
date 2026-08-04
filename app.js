@@ -1262,7 +1262,7 @@ function renderCard(habit) {
   });
 
   const panel = document.createElement("div");
-  panel.className = "habit-grid-panel scrollable-content";
+  panel.className = "habit-grid-panel";
   panel.id = `grid-panel-${habit.id}`;
   panel.style.setProperty(
     "--grid-panel-max-height",
@@ -1516,21 +1516,7 @@ function initModalEvents() {
   });
 }
 
-function lockViewportTouchDrag() {
-  // Block iOS rubber-band / viewport drag outside intentional scroll regions.
-  document.addEventListener(
-    "touchmove",
-    (event) => {
-      if (!event.target.closest(".scrollable-content")) {
-        event.preventDefault();
-      }
-    },
-    { passive: false }
-  );
-}
-
 function init() {
-  lockViewportTouchDrag();
   initModalEvents();
   syncDurationSlider(DEFAULT_WEEKS);
   syncHabitModeFields();
