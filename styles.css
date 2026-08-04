@@ -512,9 +512,24 @@ body {
   overscroll-behavior: contain;
 }
 
-/* Continuous cards: panel is a collapse wrapper only — grid handles the height cap */
+/* Continuous cards: panel provides width container queries; grid scrolls at exactly 4 rows */
+.grid-card[data-habit-mode="continuous"] .habit-grid-panel {
+  container-type: inline-size;
+  container-name: continuous-habit-panel;
+  --continuous-grid-gap: 8px;
+  /*
+   * Exactly 4 square rows + 3 gaps.
+   * Use 100cqw (panel width). Do NOT use 100% here — in max-height,
+   * percentage resolves against height, not width.
+   */
+  --continuous-grid-max-height: calc(
+    4 * ((100cqw - 6 * var(--continuous-grid-gap)) / 7) +
+      3 * var(--continuous-grid-gap)
+  );
+}
+
 .grid-card[data-habit-mode="continuous"]:not(.is-collapsed) .habit-grid-panel {
-  max-height: 220px !important;
+  max-height: var(--continuous-grid-max-height) !important;
   overflow: hidden !important;
 }
 
@@ -572,24 +587,25 @@ body {
 
 /*
  * Continuous habit squares live in .habit-grid.
- * Cap THAT container so history never expands the card past ~4 rows.
+ * Height tracks live square size: 4 * S + 3 * gap (S from 7-column width).
  */
 .grid-card[data-habit-mode="continuous"] .habit-grid {
   display: grid !important;
   grid-template-columns: repeat(7, 1fr) !important;
   grid-auto-rows: auto !important;
   align-content: start !important;
-  gap: 8px !important;
+  gap: var(--continuous-grid-gap, 8px) !important;
   width: 100% !important;
   max-width: 100% !important;
   height: auto !important;
-  max-height: 220px !important;
+  max-height: var(--continuous-grid-max-height) !important;
   overflow-x: hidden !important;
   overflow-y: auto !important;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
   scroll-snap-type: y mandatory;
   scroll-padding-block: 0;
+  scrollbar-gutter: stable;
   padding-bottom: 0 !important;
   box-sizing: border-box !important;
   scrollbar-width: thin;
@@ -618,8 +634,11 @@ body {
   max-width: 100%;
 }
 
-/* Snap to the start of each week row (every 7th cell) */
-.grid-card[data-habit-mode="continuous"] .habit-cell:nth-child(7n + 1) {
+.grid-card[data-habit-mode="continuous"] .habit-cell,
+.grid-card[data-habit-mode="continuous"] .grid-day {
+  aspect-ratio: 1 !important;
+  width: 100% !important;
+  height: auto !important;
   scroll-snap-align: start;
   scroll-snap-stop: normal;
 }

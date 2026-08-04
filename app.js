@@ -321,8 +321,8 @@ function renderStreakBadgeContent(badge, habit) {
 
 function estimatePanelMaxHeight(dayCount, options = {}) {
   if (options.continuous) {
-    // Matches .habit-grid max-height — ~4 week rows.
-    return "220px";
+    // Width-based 4-row cap (cqw). JS may refine via --continuous-grid-max-height.
+    return "calc(4 * ((100cqw - 48px) / 7) + 24px)";
   }
 
   const rows = Math.max(1, Math.ceil(dayCount / GRID_COLUMNS));
@@ -404,22 +404,43 @@ function syncContinuousHabitWindow(habit) {
   calculateStreaks(habit);
 }
 
-function scrollContinuousPanelToLatest(panel) {
+function syncContinuousGridViewport(panel) {
   if (!panel) return;
 
-  const grid = panel.querySelector(".habit-grid") || panel;
+  const grid = panel.querySelector(".habit-grid");
+  if (!grid) return;
 
-  const scrollToEnd = () => {
+  const apply = () => {
     if (!grid.isConnected) return;
+
+    const cell = grid.querySelector(".habit-cell");
+    const gap =
+      Number.parseFloat(window.getComputedStyle(grid).rowGap) || 8;
+
+    // Measure live square size so exactly 4 rows fit on any screen width.
+    if (cell) {
+      const squareSize = cell.getBoundingClientRect().width;
+      if (squareSize > 0) {
+        const maxHeight = squareSize * 4 + gap * 3;
+        const maxHeightPx = `${maxHeight}px`;
+        panel.style.setProperty("--continuous-grid-max-height", maxHeightPx);
+        grid.style.setProperty("--continuous-grid-max-height", maxHeightPx);
+      }
+    }
+
     // Keep the active week (today) visible at the bottom of the 4-row viewport.
     grid.scrollTop = grid.scrollHeight;
   };
 
-  scrollToEnd();
+  apply();
   window.requestAnimationFrame(() => {
-    scrollToEnd();
-    window.requestAnimationFrame(scrollToEnd);
+    apply();
+    window.requestAnimationFrame(apply);
   });
+}
+
+function scrollContinuousPanelToLatest(panel) {
+  syncContinuousGridViewport(panel);
 }
 
 function saveHabits() {
