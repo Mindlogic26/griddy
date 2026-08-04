@@ -1,4 +1,4 @@
-const CACHE_NAME = "griddy-v1";
+const CACHE_NAME = "griddy-v2";
 const ASSETS = [
   "./",
   "./index.html",
@@ -6,6 +6,7 @@ const ASSETS = [
   "./app.js",
   "./manifest.json",
   "./icon.png",
+  "./icon-192.png",
 ];
 
 self.addEventListener("install", (event) => {
