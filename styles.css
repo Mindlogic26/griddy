@@ -505,12 +505,27 @@ body {
   overscroll-behavior: contain;
 }
 
+/* Continuous habits: exactly 4 week rows visible, snap-scroll by row */
+.grid-card[data-habit-mode="continuous"] .habit-grid-panel {
+  container-type: inline-size;
+  container-name: continuous-grid;
+}
+
 .grid-card[data-habit-mode="continuous"]:not(.is-collapsed) .habit-grid-panel {
-  max-height: 220px;
+  --habit-grid-gap: 8px;
+  --habit-visible-rows: 4;
+  --habit-cell-size: calc((100cqw - 6 * var(--habit-grid-gap)) / 7);
+  max-height: calc(
+    var(--habit-visible-rows) * var(--habit-cell-size) +
+      (var(--habit-visible-rows) - 1) * var(--habit-grid-gap)
+  );
   overflow-x: hidden;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
+  scroll-snap-type: y mandatory;
+  scroll-padding-block: 0;
+  scrollbar-gutter: stable;
   scrollbar-width: thin;
   scrollbar-color: rgba(0, 163, 255, 0.45) transparent;
 }
@@ -583,9 +598,30 @@ body {
   padding-bottom: 2px;
 }
 
+.grid-card[data-habit-mode="continuous"] .habit-grid {
+  --habit-grid-gap: 8px;
+  --habit-cell-size: calc((100cqw - 6 * var(--habit-grid-gap)) / 7);
+  gap: var(--habit-grid-gap);
+  grid-auto-rows: var(--habit-cell-size);
+  padding-bottom: 0;
+}
+
 .habit-grid .habit-cell,
 .habit-grid .grid-day {
   max-width: 100%;
+}
+
+.grid-card[data-habit-mode="continuous"] .habit-cell,
+.grid-card[data-habit-mode="continuous"] .grid-day {
+  aspect-ratio: auto;
+  width: 100%;
+  height: var(--habit-cell-size);
+}
+
+/* Snap to the start of each week row (every 7th cell) */
+.grid-card[data-habit-mode="continuous"] .habit-cell:nth-child(7n + 1) {
+  scroll-snap-align: start;
+  scroll-snap-stop: normal;
 }
 
 .habit-cell {

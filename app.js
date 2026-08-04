@@ -321,8 +321,8 @@ function renderStreakBadgeContent(badge, habit) {
 
 function estimatePanelMaxHeight(dayCount, options = {}) {
   if (options.continuous) {
-    // Continuous habits keep a 7-column week grid with a capped vertical scroll area.
-    return "220px";
+    // Exactly 4 rows + 3 gaps; CSS owns the final calc via container query units.
+    return "calc(4 * ((100cqw - 6 * 8px) / 7) + 3 * 8px)";
   }
 
   const rows = Math.max(1, Math.ceil(dayCount / GRID_COLUMNS));
@@ -409,9 +409,11 @@ function scrollContinuousPanelToLatest(panel) {
 
   const scrollToEnd = () => {
     if (!panel.isConnected) return;
+    // Keep the active week (today) visible at the bottom of the 4-row viewport.
     panel.scrollTop = panel.scrollHeight;
   };
 
+  scrollToEnd();
   window.requestAnimationFrame(() => {
     scrollToEnd();
     window.requestAnimationFrame(scrollToEnd);
