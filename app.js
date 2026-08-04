@@ -321,8 +321,8 @@ function renderStreakBadgeContent(badge, habit) {
 
 function estimatePanelMaxHeight(dayCount, options = {}) {
   if (options.continuous) {
-    // Exactly 4 rows + 3 gaps; CSS owns the final calc via container query units.
-    return "calc(4 * ((100cqw - 6 * 8px) / 7) + 3 * 8px)";
+    // Hard pixel cap matching CSS — keeps exactly ~4 week rows visible.
+    return "250px";
   }
 
   const rows = Math.max(1, Math.ceil(dayCount / GRID_COLUMNS));
