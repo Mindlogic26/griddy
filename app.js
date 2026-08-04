@@ -13,6 +13,7 @@ const PANEL_VISIBLE_MAX = 560;
 const dashboard = document.getElementById("dashboard");
 const emptyState = document.getElementById("empty-state");
 const addHabitBtn = document.getElementById("add-habit-btn");
+const appDateLabel = document.getElementById("app-date");
 const statsBtn = document.getElementById("stats-btn");
 const statsModal = document.getElementById("stats-modal");
 const statsCloseBtn = document.getElementById("stats-close-btn");
@@ -109,6 +110,80 @@ function getAppToday() {
   const today = new Date();
   today.setDate(today.getDate() + debugDayOffset);
   return startOfLocalDay(today);
+}
+
+const WEEKDAY_NAMES = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+];
+
+const MONTH_SHORT_NAMES = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
+
+function formatHeaderDate(date) {
+  return `${WEEKDAY_NAMES[date.getDay()]}, ${MONTH_SHORT_NAMES[date.getMonth()]} ${date.getDate()}`;
+}
+
+function formatCompactDate(date) {
+  return `${MONTH_SHORT_NAMES[date.getMonth()]} ${date.getDate()}`;
+}
+
+function formatTooltipDate(date) {
+  return `${MONTH_SHORT_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
+}
+
+function updateAppDateLabel() {
+  if (!appDateLabel) return;
+  appDateLabel.textContent = formatHeaderDate(getAppToday());
+}
+
+function getHabitDayDate(habit, dayIndex) {
+  if (isContinuousHabit(habit)) {
+    const today = getAppToday();
+    const offsetFromEnd = Math.max(0, habit.days.length - 1 - dayIndex);
+    const date = new Date(today);
+    date.setDate(date.getDate() - offsetFromEnd);
+    return startOfLocalDay(date);
+  }
+
+  const createdDate = normalizeCreatedDate(habit.createdDate);
+  const start = createdDate
+    ? startOfLocalDay(new Date(createdDate))
+    : getAppToday();
+  const date = new Date(start);
+  date.setDate(date.getDate() + dayIndex);
+  return startOfLocalDay(date);
+}
+
+function formatCellTitle(habit, dayIndex, currentDayIndex, totalDays) {
+  const date = getHabitDayDate(habit, dayIndex);
+  const dateLabel = formatTooltipDate(date);
+  const isToday = isTodayCell(habit, dayIndex, currentDayIndex, totalDays);
+
+  let status = "Open";
+  if (isToday) status = "Today";
+  else if (habit.days[dayIndex]) status = "Completed";
+  else if (isMissedDay(habit, dayIndex, currentDayIndex)) status = "Missed";
+  else if (!isDayInteractive(habit, dayIndex, currentDayIndex)) status = "Upcoming";
+
+  return `${dateLabel} - ${status}`;
 }
 
 function isContinuousHabit(habit) {
@@ -689,6 +764,7 @@ function applyBackupPayload(payload) {
   archivedHabits = loadArchivedHabits();
   saveHabits();
   saveArchivedHabits();
+  updateAppDateLabel();
   renderHabits();
   closeStatsModal();
 }
@@ -930,6 +1006,7 @@ function buildGrid(habit) {
         : `${habit.title}, ${dayLabel}`
     );
     cell.setAttribute("aria-pressed", String(habit.days[i]));
+    cell.title = formatCellTitle(habit, i, currentDayIndex, targetDays);
 
     if (habit.days[i]) cell.classList.add("is-filled");
     if (today) cell.classList.add("today");
@@ -948,6 +1025,7 @@ function buildGrid(habit) {
       cell.classList.toggle("is-filled", habit.days[i]);
       cell.classList.toggle("failed", isMissedDay(habit, i, liveIndex));
       cell.setAttribute("aria-pressed", String(habit.days[i]));
+      cell.title = formatCellTitle(habit, i, liveIndex, targetDays);
 
       const cardEl = dashboard.querySelector(`[data-habit-id="${habit.id}"]`);
       if (cardEl) {
@@ -1052,22 +1130,40 @@ function enterTitleEditMode(habit, heading, titleEl, editBtn) {
   });
 }
 
+function renderStartDateLabel(habit) {
+  const createdDate = normalizeCreatedDate(habit.createdDate);
+  if (!createdDate) return null;
+
+  const label = document.createElement("span");
+  label.className = "habit-start-date";
+  label.textContent = `Start: ${formatCompactDate(new Date(createdDate))}`;
+  return label;
+}
+
 function renderCardMeta(habit) {
+  const group = document.createElement("div");
+  group.className = "grid-card__meta-group";
+
   if (isContinuousHabit(habit)) {
     const badge = document.createElement("span");
     badge.className = "streak-badge";
     badge.dataset.streak = "";
     renderStreakBadgeContent(badge, habit);
-    return badge;
+    group.appendChild(badge);
+  } else {
+    // Fixed contracts always show completed / total days for the full challenge length.
+    const meta = document.createElement("p");
+    meta.className = "grid-card__meta";
+    const completed = countFilled(habit.days);
+    const total = getTargetDays(habit);
+    meta.innerHTML = `<span data-progress>${completed}</span> / <span data-total>${total}</span> days`;
+    group.appendChild(meta);
   }
 
-  // Fixed contracts always show completed / total days for the full challenge length.
-  const meta = document.createElement("p");
-  meta.className = "grid-card__meta";
-  const completed = countFilled(habit.days);
-  const total = getTargetDays(habit);
-  meta.innerHTML = `<span data-progress>${completed}</span> / <span data-total>${total}</span> days`;
-  return meta;
+  const startLabel = renderStartDateLabel(habit);
+  if (startLabel) group.appendChild(startLabel);
+
+  return group;
 }
 
 function renderCard(habit) {
@@ -1292,6 +1388,7 @@ function simulateNextDay() {
   });
 
   saveHabits();
+  updateAppDateLabel();
   renderHabits();
 }
 
@@ -1411,6 +1508,7 @@ function init() {
   initModalEvents();
   syncDurationSlider(DEFAULT_WEEKS);
   syncHabitModeFields();
+  updateAppDateLabel();
 
   const savedHabits = loadHabits();
   habits = Array.isArray(savedHabits) ? savedHabits : [];
