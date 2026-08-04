@@ -321,8 +321,8 @@ function renderStreakBadgeContent(badge, habit) {
 
 function estimatePanelMaxHeight(dayCount, options = {}) {
   if (options.continuous) {
-    // Hard pixel cap matching CSS — keeps exactly ~4 week rows visible.
-    return "250px";
+    // Matches .habit-grid max-height — ~4 week rows.
+    return "220px";
   }
 
   const rows = Math.max(1, Math.ceil(dayCount / GRID_COLUMNS));
@@ -407,10 +407,12 @@ function syncContinuousHabitWindow(habit) {
 function scrollContinuousPanelToLatest(panel) {
   if (!panel) return;
 
+  const grid = panel.querySelector(".habit-grid") || panel;
+
   const scrollToEnd = () => {
-    if (!panel.isConnected) return;
+    if (!grid.isConnected) return;
     // Keep the active week (today) visible at the bottom of the 4-row viewport.
-    panel.scrollTop = panel.scrollHeight;
+    grid.scrollTop = grid.scrollHeight;
   };
 
   scrollToEnd();

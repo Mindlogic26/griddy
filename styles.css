@@ -204,6 +204,13 @@ body {
   border-bottom: 1px solid rgba(0, 112, 243, 0.1);
 }
 
+.grid-card[data-habit-mode="continuous"] {
+  /* Card height follows header + capped grid — never grows with full history */
+  height: auto;
+  max-height: none;
+  overflow: visible;
+}
+
 .grid-card:last-child {
   border-bottom: none;
   padding-bottom: 0;
@@ -505,42 +512,18 @@ body {
   overscroll-behavior: contain;
 }
 
-/* Continuous habits: hard 4-row viewport cap (never grow with history) */
+/* Continuous cards: panel is a collapse wrapper only — grid handles the height cap */
 .grid-card[data-habit-mode="continuous"]:not(.is-collapsed) .habit-grid-panel {
-  max-height: 250px;
-  overflow-x: hidden;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
-  scroll-snap-type: y mandatory;
-  scroll-padding-block: 0;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(0, 163, 255, 0.45) transparent;
-}
-
-.grid-card[data-habit-mode="continuous"]:not(.is-collapsed) .habit-grid-panel::-webkit-scrollbar {
-  width: 4px;
-}
-
-.grid-card[data-habit-mode="continuous"]:not(.is-collapsed) .habit-grid-panel::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.grid-card[data-habit-mode="continuous"]:not(.is-collapsed) .habit-grid-panel::-webkit-scrollbar-thumb {
-  background: linear-gradient(
-    180deg,
-    rgba(0, 112, 243, 0.35),
-    rgba(0, 163, 255, 0.55)
-  );
-  border-radius: 999px;
+  max-height: 220px !important;
+  overflow: hidden !important;
 }
 
 .grid-card.is-collapsed .habit-grid-panel {
-  max-height: 0;
+  max-height: 0 !important;
   opacity: 0;
   transform: translateY(-6px);
   pointer-events: none;
-  overflow: hidden;
+  overflow: hidden !important;
 }
 
 .delete-btn {
@@ -587,8 +570,47 @@ body {
   padding-bottom: 2px;
 }
 
+/*
+ * Continuous habit squares live in .habit-grid.
+ * Cap THAT container so history never expands the card past ~4 rows.
+ */
 .grid-card[data-habit-mode="continuous"] .habit-grid {
-  padding-bottom: 0;
+  display: grid !important;
+  grid-template-columns: repeat(7, 1fr) !important;
+  grid-auto-rows: auto !important;
+  align-content: start !important;
+  gap: 8px !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  height: auto !important;
+  max-height: 220px !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  scroll-snap-type: y mandatory;
+  scroll-padding-block: 0;
+  padding-bottom: 0 !important;
+  box-sizing: border-box !important;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 163, 255, 0.45) transparent;
+}
+
+.grid-card[data-habit-mode="continuous"] .habit-grid::-webkit-scrollbar {
+  width: 4px;
+}
+
+.grid-card[data-habit-mode="continuous"] .habit-grid::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.grid-card[data-habit-mode="continuous"] .habit-grid::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    180deg,
+    rgba(0, 112, 243, 0.35),
+    rgba(0, 163, 255, 0.55)
+  );
+  border-radius: 999px;
 }
 
 .habit-grid .habit-cell,
