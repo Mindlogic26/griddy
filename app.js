@@ -117,7 +117,7 @@ function isContinuousHabit(habit) {
 
 function getCurrentDayIndex(habit) {
   if (isContinuousHabit(habit)) {
-    // Today is always the last block in the continuous timeline.
+    // Today is always the last block in the continuous week grid.
     return Math.max(0, habit.days.length - 1);
   }
 
@@ -321,8 +321,8 @@ function renderStreakBadgeContent(badge, habit) {
 
 function estimatePanelMaxHeight(dayCount, options = {}) {
   if (options.continuous) {
-    // Continuous habits render as a single horizontal timeline row.
-    return "72px";
+    // Continuous habits keep a 7-column week grid with a capped vertical scroll area.
+    return "220px";
   }
 
   const rows = Math.max(1, Math.ceil(dayCount / GRID_COLUMNS));
@@ -404,15 +404,14 @@ function syncContinuousHabitWindow(habit) {
   calculateStreaks(habit);
 }
 
-function scrollContinuousGridToToday(grid) {
-  if (!grid) return;
+function scrollContinuousPanelToLatest(panel) {
+  if (!panel) return;
 
   const scrollToEnd = () => {
-    if (!grid.isConnected) return;
-    grid.scrollLeft = grid.scrollWidth;
+    if (!panel.isConnected) return;
+    panel.scrollTop = panel.scrollHeight;
   };
 
-  scrollToEnd();
   window.requestAnimationFrame(() => {
     scrollToEnd();
     window.requestAnimationFrame(scrollToEnd);
@@ -911,12 +910,12 @@ function buildGrid(habit) {
   const targetDays = getTargetDays(habit);
   const currentDayIndex = getCurrentDayIndex(habit);
   const grid = document.createElement("div");
-  grid.className = continuous ? "habit-grid habit-grid--timeline" : "habit-grid";
+  grid.className = "habit-grid";
   grid.setAttribute("role", "grid");
   grid.setAttribute(
     "aria-label",
     continuous
-      ? `${habit.title} continuous progress timeline`
+      ? `${habit.title} continuous progress grid`
       : `${habit.title} ${targetDays} day progress grid`
   );
 
@@ -973,10 +972,6 @@ function buildGrid(habit) {
     });
 
     grid.appendChild(cell);
-  }
-
-  if (continuous) {
-    scrollContinuousGridToToday(grid);
   }
 
   return grid;
@@ -1181,6 +1176,10 @@ function renderCard(habit) {
     })
   );
   panel.appendChild(buildGrid(habit));
+
+  if (isContinuousHabit(habit)) {
+    scrollContinuousPanelToLatest(panel);
+  }
 
   card.append(header, panel);
 

@@ -506,8 +506,30 @@ body {
 }
 
 .grid-card[data-habit-mode="continuous"]:not(.is-collapsed) .habit-grid-panel {
+  max-height: 220px;
   overflow-x: hidden;
-  overflow-y: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 163, 255, 0.45) transparent;
+}
+
+.grid-card[data-habit-mode="continuous"]:not(.is-collapsed) .habit-grid-panel::-webkit-scrollbar {
+  width: 4px;
+}
+
+.grid-card[data-habit-mode="continuous"]:not(.is-collapsed) .habit-grid-panel::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.grid-card[data-habit-mode="continuous"]:not(.is-collapsed) .habit-grid-panel::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    180deg,
+    rgba(0, 112, 243, 0.35),
+    rgba(0, 163, 255, 0.55)
+  );
+  border-radius: 999px;
 }
 
 .grid-card.is-collapsed .habit-grid-panel {
@@ -555,64 +577,15 @@ body {
   grid-auto-rows: auto;
   align-content: start;
   justify-items: stretch;
-  gap: var(--gap);
+  gap: 8px;
   width: 100%;
   height: auto;
   padding-bottom: 2px;
 }
 
-/* Continuous habits: single-row historical timeline */
-.habit-grid--timeline {
-  display: flex;
-  flex-wrap: nowrap;
-  align-items: stretch;
-  gap: 8px;
-  width: 100%;
-  max-width: 100%;
-  overflow-x: auto;
-  overflow-y: hidden;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior-x: contain;
-  scroll-snap-type: x proximity;
-  padding-bottom: 6px;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(0, 163, 255, 0.45) transparent;
-}
-
-.habit-grid--timeline::-webkit-scrollbar {
-  height: 4px;
-}
-
-.habit-grid--timeline::-webkit-scrollbar-track {
-  background: transparent;
-  border-radius: 999px;
-}
-
-.habit-grid--timeline::-webkit-scrollbar-thumb {
-  background: linear-gradient(
-    90deg,
-    rgba(0, 112, 243, 0.35),
-    rgba(0, 163, 255, 0.55)
-  );
-  border-radius: 999px;
-}
-
-.habit-grid--timeline::-webkit-scrollbar-thumb:hover {
-  background: rgba(61, 180, 255, 0.7);
-}
-
 .habit-grid .habit-cell,
 .habit-grid .grid-day {
   max-width: 100%;
-}
-
-.habit-grid--timeline .habit-cell,
-.habit-grid--timeline .grid-day {
-  flex: 0 0 calc((100% - 48px) / 7);
-  width: calc((100% - 48px) / 7);
-  min-width: 34px;
-  max-width: none;
-  scroll-snap-align: end;
 }
 
 .habit-cell {
