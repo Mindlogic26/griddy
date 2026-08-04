@@ -963,6 +963,94 @@ function buildGrid(habit) {
   return grid;
 }
 
+function saveHabitTitle(habitId, newTitle) {
+  const habit = habits.find((entry) => entry.id === habitId);
+  if (!habit) return false;
+
+  const trimmed = newTitle.trim();
+  if (!trimmed) return false;
+
+  habit.title = trimmed;
+  saveHabits();
+  renderHabits();
+  return true;
+}
+
+function enterTitleEditMode(habit, heading, titleEl, editBtn) {
+  const form = document.createElement("div");
+  form.className = "title-edit-form";
+
+  const input = document.createElement("input");
+  input.type = "text";
+  input.className = "habit-title-input";
+  input.value = habit.title;
+  input.maxLength = 60;
+  input.setAttribute("aria-label", "Edit habit name");
+  input.autocomplete = "off";
+
+  const saveBtn = document.createElement("button");
+  saveBtn.type = "button";
+  saveBtn.className = "title-save-btn";
+  saveBtn.textContent = "Save";
+
+  const cancelBtn = document.createElement("button");
+  cancelBtn.type = "button";
+  cancelBtn.className = "title-cancel-btn";
+  cancelBtn.textContent = "Cancel";
+
+  const exitEditMode = () => {
+    form.replaceWith(titleEl, editBtn);
+  };
+
+  const commitEdit = () => {
+    const nextTitle = input.value.trim();
+    if (!nextTitle) {
+      input.focus();
+      input.classList.add("is-invalid");
+      return;
+    }
+    saveHabitTitle(habit.id, nextTitle);
+  };
+
+  saveBtn.addEventListener("click", (event) => {
+    event.stopPropagation();
+    commitEdit();
+  });
+
+  cancelBtn.addEventListener("click", (event) => {
+    event.stopPropagation();
+    exitEditMode();
+  });
+
+  input.addEventListener("click", (event) => {
+    event.stopPropagation();
+  });
+
+  input.addEventListener("input", () => {
+    input.classList.remove("is-invalid");
+  });
+
+  input.addEventListener("keydown", (event) => {
+    event.stopPropagation();
+    if (event.key === "Enter") {
+      event.preventDefault();
+      commitEdit();
+    }
+    if (event.key === "Escape") {
+      event.preventDefault();
+      exitEditMode();
+    }
+  });
+
+  form.append(input, saveBtn, cancelBtn);
+  titleEl.replaceWith(form);
+  editBtn.remove();
+  window.requestAnimationFrame(() => {
+    input.focus();
+    input.select();
+  });
+}
+
 function renderCardMeta(habit) {
   if (isContinuousHabit(habit)) {
     const badge = document.createElement("span");
@@ -1013,7 +1101,17 @@ function renderCard(habit) {
   title.className = "grid-card__title";
   title.textContent = habit.title;
 
-  heading.append(chevron, title);
+  const editBtn = document.createElement("button");
+  editBtn.type = "button";
+  editBtn.className = "edit-title-btn";
+  editBtn.setAttribute("aria-label", `Edit ${habit.title}`);
+  editBtn.textContent = "✏️";
+  editBtn.addEventListener("click", (event) => {
+    event.stopPropagation();
+    enterTitleEditMode(habit, heading, title, editBtn);
+  });
+
+  heading.append(chevron, title, editBtn);
 
   const actions = document.createElement("div");
   actions.className = "grid-card__actions";
@@ -1035,6 +1133,8 @@ function renderCard(habit) {
 
   header.addEventListener("click", (event) => {
     if (event.target.closest(".delete-btn")) return;
+    if (event.target.closest(".edit-title-btn")) return;
+    if (event.target.closest(".title-edit-form")) return;
     if (event.target.closest(".archive-btn")) return;
     if (event.target.closest(".retry-btn")) return;
     toggleCollapsed(habit, card);
@@ -1042,6 +1142,8 @@ function renderCard(habit) {
 
   header.addEventListener("keydown", (event) => {
     if (event.target.closest(".delete-btn")) return;
+    if (event.target.closest(".edit-title-btn")) return;
+    if (event.target.closest(".title-edit-form")) return;
     if (event.target.closest(".archive-btn")) return;
     if (event.target.closest(".retry-btn")) return;
     if (event.key === "Enter" || event.key === " ") {

@@ -231,6 +231,20 @@ body {
   align-items: center;
   gap: 8px;
   min-width: 0;
+  flex: 1;
+}
+
+.grid-card__header:has(.title-edit-form) {
+  flex-wrap: wrap;
+}
+
+.grid-card__header:has(.title-edit-form) .grid-card__actions {
+  display: none;
+}
+
+.grid-card__header:has(.title-edit-form) .grid-card__heading {
+  flex: 1 1 100%;
+  max-width: 100%;
 }
 
 .grid-card__chevron {
@@ -257,6 +271,140 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.edit-title-btn {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1;
+  cursor: pointer;
+  appearance: none;
+  opacity: 0.55;
+  transition:
+    opacity 0.2s ease,
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.edit-title-btn:hover,
+.edit-title-btn:focus-visible {
+  opacity: 1;
+  border-color: rgba(0, 163, 255, 0.35);
+  background: rgba(0, 112, 243, 0.12);
+}
+
+.edit-title-btn:active {
+  transform: scale(0.94);
+}
+
+.edit-title-btn:focus-visible {
+  outline: 2px solid var(--accent-bright);
+  outline-offset: 2px;
+}
+
+.title-edit-form {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  flex: 1;
+  max-width: 100%;
+}
+
+.habit-title-input {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  min-height: 34px;
+  margin: 0;
+  padding: 6px 10px;
+  border: 1px solid rgba(0, 163, 255, 0.45);
+  border-radius: 8px;
+  background: rgba(0, 112, 243, 0.1);
+  color: var(--fg);
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 500;
+  outline: none;
+  box-sizing: border-box;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.habit-title-input:focus {
+  border-color: var(--accent-bright);
+  background: rgba(0, 112, 243, 0.16);
+  box-shadow: 0 0 0 3px rgba(0, 112, 243, 0.2);
+}
+
+.habit-title-input.is-invalid {
+  border-color: rgba(255, 77, 77, 0.65);
+  box-shadow: 0 0 0 3px rgba(255, 77, 77, 0.15);
+}
+
+.title-save-btn,
+.title-cancel-btn {
+  flex-shrink: 0;
+  min-height: 34px;
+  margin: 0;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1;
+  cursor: pointer;
+  appearance: none;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.title-save-btn {
+  border: 1px solid var(--accent-bright);
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 0 12px rgba(0, 163, 255, 0.25);
+}
+
+.title-save-btn:hover {
+  background: #0a7dff;
+}
+
+.title-cancel-btn {
+  border: 1px solid var(--cell-border);
+  background: transparent;
+  color: var(--muted);
+}
+
+.title-cancel-btn:hover {
+  border-color: rgba(0, 163, 255, 0.4);
+  color: var(--fg);
+}
+
+.title-save-btn:active,
+.title-cancel-btn:active {
+  transform: scale(0.96);
+}
+
+.title-save-btn:focus-visible,
+.title-cancel-btn:focus-visible {
+  outline: 2px solid var(--accent-bright);
+  outline-offset: 2px;
 }
 
 .grid-card__actions {
@@ -542,6 +690,23 @@ body {
     border: none;
     border-radius: 0;
     box-shadow: none;
+  }
+
+  .title-edit-form {
+    gap: 5px;
+  }
+
+  .habit-title-input {
+    font-size: 0.9rem;
+    min-height: 32px;
+    padding: 5px 8px;
+  }
+
+  .title-save-btn,
+  .title-cancel-btn {
+    min-height: 32px;
+    padding: 5px 8px;
+    font-size: 0.7rem;
   }
 }
 
